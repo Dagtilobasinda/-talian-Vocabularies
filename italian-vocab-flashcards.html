@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>İtalyanca Kelimeler – Flashcard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --sun: #F5A623; --terra: #C85A1E; --cream: #FDF8F2;
+    --ink: #1A1208; --muted: #8C7B6B; --green: #2E7D52;
+    --red: #C0392B; --card-bg: #FFFDF9;
+    --shadow: 0 8px 40px rgba(26,18,8,0.13);
+  }
+  body {
+    background: var(--cream); font-family: 'Inter', sans-serif;
+    color: var(--ink); min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 24px 16px 48px;
+  }
+  header { text-align: center; margin-bottom: 20px; }
+  header h1 { font-family: 'DM Serif Display', serif; font-size: clamp(1.5rem,4vw,2.1rem); letter-spacing: -0.5px; }
+  header h1 span { color: var(--terra); font-style: italic; }
+  .subtitle { font-size: 0.82rem; color: var(--muted); margin-top: 4px; }
+
+  .cat-scroll { width: 100%; max-width: 520px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 18px; scrollbar-width: none; }
+  .cat-scroll::-webkit-scrollbar { display: none; }
+  .cat-row { display: flex; gap: 8px; width: max-content; }
+  .cat-btn {
+    padding: 6px 14px; border-radius: 99px; border: 1.5px solid #d4c9bc; background: transparent;
+    font-size: 0.76rem; color: var(--muted); cursor: pointer; transition: all 0.15s;
+    white-space: nowrap; font-family: 'Inter', sans-serif;
+  }
+  .cat-btn:hover { border-color: var(--sun); color: var(--terra); }
+  .cat-btn.active { background: var(--sun); border-color: var(--sun); color: #fff; font-weight: 600; }
+
+  .progress-row { display: flex; align-items: center; gap: 12px; width: 100%; max-width: 460px; margin-bottom: 18px; }
+  .progress-bar { flex: 1; height: 6px; background: #e8ddd3; border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--sun), var(--terra)); border-radius: 99px; transition: width 0.4s ease; }
+  .progress-text { font-size: 0.75rem; color: var(--muted); white-space: nowrap; min-width: 52px; text-align: right; }
+
+  .scene { width: 100%; max-width: 460px; height: 260px; perspective: 1000px; margin-bottom: 24px; cursor: pointer; }
+  .card {
+    width: 100%; height: 100%; position: relative; transform-style: preserve-3d;
+    transition: transform 0.52s cubic-bezier(0.4,0,0.2,1); border-radius: 20px;
+  }
+  .card.flipped { transform: rotateY(180deg); }
+  .card-face {
+    position: absolute; inset: 0; border-radius: 20px; backface-visibility: hidden;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    padding: 28px 24px; box-shadow: var(--shadow);
+  }
+  .card-front { background: var(--card-bg); border: 1.5px solid #ede4d9; }
+  .card-back { background: linear-gradient(145deg,#FFF5E8,#FDE8CC); border: 1.5px solid #f0d5b0; transform: rotateY(180deg); }
+
+  .card-label { font-size: 0.68rem; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+  .card-cat { position: absolute; top: 14px; left: 16px; font-size: 0.63rem; color: #c8b8a8; background: #f5ede4; padding: 2px 8px; border-radius: 99px; }
+  .card-tap { position: absolute; bottom: 14px; right: 16px; font-size: 0.63rem; color: #c8b8a8; }
+  .card-num { position: absolute; bottom: 14px; left: 16px; font-size: 0.63rem; color: #c8b8a8; }
+
+  .main-word { font-family: 'DM Serif Display', serif; font-size: clamp(1.6rem,5vw,2.4rem); color: var(--ink); text-align: center; line-height: 1.2; }
+  .card-front .main-word { font-style: italic; }
+  .sub-word { font-size: 0.84rem; color: var(--muted); margin-top: 6px; text-align: center; }
+  .back-main { font-family: 'DM Serif Display', serif; font-size: clamp(1.4rem,4vw,2rem); color: var(--terra); text-align: center; line-height: 1.2; margin-bottom: 6px; }
+  .back-sub { font-size: 0.8rem; color: var(--muted); text-align: center; font-style: italic; }
+
+  .btn-row { display: flex; gap: 10px; justify-content: center; margin-bottom: 16px; }
+  .btn { display: flex; align-items: center; gap: 6px; padding: 10px 20px; border-radius: 12px; border: none; font-family: 'Inter', sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: transform 0.12s; }
+  .btn:active { transform: scale(0.95); }
+  .btn-wrong { background: #FDECEA; color: var(--red); border: 1.5px solid #f5c6c2; }
+  .btn-right { background: #E9F7EF; color: var(--green); border: 1.5px solid #a8dbbe; }
+  .btn-skip { background: #F3F0EC; color: var(--muted); border: 1.5px solid #ddd6ce; }
+  .btn-wrong:hover { background: #fad4d0; }
+  .btn-right:hover { background: #c8edda; }
+  .btn-skip:hover { background: #e8e2dc; }
+
+  .score-row { display: flex; gap: 18px; font-size: 0.8rem; color: var(--muted); margin-bottom: 16px; }
+  .score-item { display: flex; align-items: center; gap: 5px; }
+  .score-dot { width: 7px; height: 7px; border-radius: 50%; }
+  .dot-right { background: var(--green); } .dot-wrong { background: var(--red); }
+
+  .controls-row { display: flex; gap: 8px; }
+  .btn-ctrl { padding: 7px 16px; border-radius: 99px; border: 1.5px solid #d4c9bc; background: transparent; font-size: 0.75rem; color: var(--muted); cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.15s; }
+  .btn-ctrl:hover { border-color: var(--sun); color: var(--terra); }
+
+  .done-screen { display: none; flex-direction: column; align-items: center; text-align: center; padding: 40px 20px; }
+  .done-screen.visible { display: flex; }
+  .done-emoji { font-size: 2.8rem; margin-bottom: 10px; }
+  .done-title { font-family: 'DM Serif Display', serif; font-size: 1.7rem; }
+  .done-sub { font-size: 0.88rem; color: var(--muted); margin-top: 6px; }
+  .done-stats { display: flex; gap: 24px; margin-top: 18px; }
+  .done-stat { text-align: center; }
+  .done-stat-num { font-size: 1.7rem; font-weight: 700; }
+  .done-stat-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .num-green { color: var(--green); } .num-red { color: var(--red); }
+
+  @media (max-width: 420px) { .scene { height: 230px; } .main-word { font-size: 1.4rem; } }
+  @media (prefers-reduced-motion: reduce) { .card { transition: none; } }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>İtalyanca <span>Kelimeler</span></h1>
+  <p class="subtitle">Kartı çevirmek için dokunun</p>
+</header>
+
+<div class="cat-scroll"><div class="cat-row" id="catRow"></div></div>
+
+<div class="progress-row">
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  <div class="progress-text" id="progressText">0 / 0</div>
+</div>
+
+<div class="scene" id="scene" onclick="flipCard()">
+  <div class="card" id="card">
+    <div class="card-face card-front">
+      <span class="card-cat" id="frontCat"></span>
+      <span class="card-label">İtalyanca</span>
+      <div class="main-word" id="frontWord">—</div>
+      <div class="sub-word" id="frontSub"></div>
+      <span class="card-num" id="cardNum"></span>
+      <span class="card-tap">çevir →</span>
+    </div>
+    <div class="card-face card-back">
+      <span class="card-cat" id="backCat"></span>
+      <span class="card-label">Türkçe</span>
+      <div class="back-main" id="backMain">—</div>
+      <div class="back-sub" id="backSub"></div>
+      <span class="card-num" id="cardNumBack"></span>
+    </div>
+  </div>
+</div>
+
+<div class="btn-row" id="btnRow">
+  <button class="btn btn-wrong" onclick="markWrong()">✗ Bilmedim</button>
+  <button class="btn btn-skip" onclick="nextCard()">→ Atla</button>
+  <button class="btn btn-right" onclick="markRight()">✓ Bildim</button>
+</div>
+
+<div class="score-row">
+  <div class="score-item"><div class="score-dot dot-right"></div><span id="rightCount">0 doğru</span></div>
+  <div class="score-item"><div class="score-dot dot-wrong"></div><span id="wrongCount">0 yanlış</span></div>
+</div>
+
+<div class="controls-row">
+  <button class="btn-ctrl" onclick="shuffleDeck()">⇄ Karıştır</button>
+  <button class="btn-ctrl" onclick="restartDeck()">↺ Başa dön</button>
+  <button class="btn-ctrl" onclick="reviewWrong()">✗ Yanlışlar</button>
+</div>
+
+<div class="done-screen" id="doneScreen">
+  <div class="done-emoji">🎉</div>
+  <div class="done-title">Tur tamamlandı!</div>
+  <div class="done-sub">Tüm kartları geçtiniz.</div>
+  <div class="done-stats">
+    <div class="done-stat"><div class="done-stat-num num-green" id="finalRight">0</div><div class="done-stat-label">Doğru</div></div>
+    <div class="done-stat"><div class="done-stat-num num-red" id="finalWrong">0</div><div class="done-stat-label">Yanlış</div></div>
+  </div>
+  <div class="controls-row" style="margin-top:18px">
+    <button class="btn-ctrl" onclick="restartDeck()">↺ Tekrar başla</button>
+    <button class="btn-ctrl" onclick="reviewWrong()">✗ Yanlışları tekrar et</button>
+  </div>
+</div>
+
+<script>
+const ALL_CARDS = [
+  {cat:"Selamlaşma", it:"Ciao!", tr:"Merhaba! / Hoşça kal!", sub:"gayri resmi"},
+  {cat:"Selamlaşma", it:"Buongiorno", tr:"Günaydın / İyi günler"},
+  {cat:"Selamlaşma", it:"Buona sera", tr:"İyi akşamlar (öğleden sonra)"},
+  {cat:"Selamlaşma", it:"Buona notte", tr:"İyi geceler (uyumaya gidecek)"},
+  {cat:"Selamlaşma", it:"A presto!", tr:"Yakında görüşürüz!"},
+  {cat:"Selamlaşma", it:"Arrivederci", tr:"Güle güle (resmi)"},
+  {cat:"Selamlaşma", it:"Come stai?", tr:"Nasılsın? (gayri resmi)"},
+  {cat:"Selamlaşma", it:"Bene, grazie!", tr:"İyiyim, teşekkürler!"},
+  {cat:"Tanışma", it:"Come ti chiami?", tr:"Adın ne?"},
+  {cat:"Tanışma", it:"Mi chiamo Marco, e tu?", tr:"Adım Marco, ya sen?"},
+  {cat:"Tanışma", it:"Da dove vieni?", tr:"Nereden geliyorsun?"},
+  {cat:"Tanışma", it:"Vengo dall'America", tr:"Amerika'dan geliyorum."},
+  {cat:"Tanışma", it:"Cosa fai nella vita?", tr:"Hayatında ne yapıyorsun?"},
+  {cat:"Tanışma", it:"Studio medicina", tr:"Tıp okuyorum."},
+  {cat:"Tanışma", it:"Sono un avvocato", tr:"Ben bir avukatım."},
+  {cat:"Tanışma", it:"Quanti anni hai?", tr:"Kaç yaşındasın?"},
+  {cat:"Tanışma", it:"Ho ventisette anni", tr:"Yirmi yedi yaşındayım."},
+  {cat:"Aile & İnsanlar", it:"Il papà", tr:"Baba"},
+  {cat:"Aile & İnsanlar", it:"La mamma", tr:"Anne"},
+  {cat:"Aile & İnsanlar", it:"L'uomo", tr:"Adam / Erkek"},
+  {cat:"Aile & İnsanlar", it:"La donna", tr:"Kadın"},
+  {cat:"Aile & İnsanlar", it:"Il fratello", tr:"Erkek kardeş"},
+  {cat:"Aile & İnsanlar", it:"La sorella", tr:"Kız kardeş"},
+  {cat:"Aile & İnsanlar", it:"Il figlio", tr:"Oğul"},
+  {cat:"Aile & İnsanlar", it:"La figlia", tr:"Kız evlat"},
+  {cat:"Aile & İnsanlar", it:"Lo zio", tr:"Amca / Dayı / Enişte"},
+  {cat:"Aile & İnsanlar", it:"La zia", tr:"Hala / Teyze"},
+  {cat:"Aile & İnsanlar", it:"Il nonno", tr:"Dede"},
+  {cat:"Aile & İnsanlar", it:"La nonna", tr:"Büyükanne"},
+  {cat:"Yiyecek & İçecek", it:"La carne", tr:"Et"},
+  {cat:"Yiyecek & İçecek", it:"Il pesce", tr:"Balık"},
+  {cat:"Yiyecek & İçecek", it:"La verdura", tr:"Sebze"},
+  {cat:"Yiyecek & İçecek", it:"La frutta", tr:"Meyve"},
+  {cat:"Yiyecek & İçecek", it:"La pasta", tr:"Makarna"},
+  {cat:"Yiyecek & İçecek", it:"La pizza", tr:"Pizza"},
+  {cat:"Yiyecek & İçecek", it:"Il pane", tr:"Ekmek"},
+  {cat:"Yiyecek & İçecek", it:"Il panino", tr:"Sandviç / Hamburger"},
+  {cat:"Yiyecek & İçecek", it:"La mela", tr:"Elma"},
+  {cat:"Yiyecek & İçecek", it:"Il pollo", tr:"Tavuk"},
+  {cat:"Yiyecek & İçecek", it:"Il riso", tr:"Pirinç"},
+  {cat:"Yiyecek & İçecek", it:"Il latte", tr:"Süt"},
+  {cat:"Yiyecek & İçecek", it:"L'acqua", tr:"Su"},
+  {cat:"Yiyecek & İçecek", it:"Il caffè", tr:"Kahve"},
+  {cat:"Yiyecek & İçecek", it:"Lo zucchero", tr:"Şeker"},
+  {cat:"Yiyecek & İçecek", it:"Il sale", tr:"Tuz"},
+  {cat:"Yiyecek & İçecek", it:"Il pepe", tr:"Biber"},
+  {cat:"Mutfak (In cucina)", it:"Il piatto", tr:"Tabak"},
+  {cat:"Mutfak (In cucina)", it:"La forchetta", tr:"Çatal"},
+  {cat:"Mutfak (In cucina)", it:"Il coltello", tr:"Bıçak"},
+  {cat:"Mutfak (In cucina)", it:"Il cucchiaio", tr:"Kaşık"},
+  {cat:"Mutfak (In cucina)", it:"La pentola", tr:"Tencere"},
+  {cat:"Mutfak (In cucina)", it:"Il frigo", tr:"Buzdolabı"},
+  {cat:"Mutfak (In cucina)", it:"Il forno", tr:"Fırın"},
+  {cat:"Mutfak (In cucina)", it:"Il lavello", tr:"Lavabo / Evye"},
+  {cat:"Mutfak (In cucina)", it:"La caffettiera", tr:"Kahve makinesi"},
+  {cat:"Sayılar", it:"zero", tr:"0"},
+  {cat:"Sayılar", it:"uno", tr:"1"},
+  {cat:"Sayılar", it:"due", tr:"2"},
+  {cat:"Sayılar", it:"tre", tr:"3"},
+  {cat:"Sayılar", it:"quattro", tr:"4"},
+  {cat:"Sayılar", it:"cinque", tr:"5"},
+  {cat:"Sayılar", it:"sei", tr:"6"},
+  {cat:"Sayılar", it:"sette", tr:"7"},
+  {cat:"Sayılar", it:"otto", tr:"8"},
+  {cat:"Sayılar", it:"nove", tr:"9"},
+  {cat:"Sayılar", it:"dieci", tr:"10"},
+  {cat:"Sayılar", it:"undici", tr:"11"},
+  {cat:"Sayılar", it:"dodici", tr:"12"},
+  {cat:"Sayılar", it:"tredici", tr:"13"},
+  {cat:"Sayılar", it:"quattordici", tr:"14"},
+  {cat:"Sayılar", it:"quindici", tr:"15"},
+  {cat:"Sayılar", it:"sedici", tr:"16"},
+  {cat:"Sayılar", it:"diciassette", tr:"17"},
+  {cat:"Sayılar", it:"diciotto", tr:"18"},
+  {cat:"Sayılar", it:"diciannove", tr:"19"},
+  {cat:"Sayılar", it:"venti", tr:"20"},
+  {cat:"Sayılar", it:"ventuno", tr:"21"},
+  {cat:"Sayılar", it:"ventidue", tr:"22"},
+  {cat:"Sayılar", it:"ventitre", tr:"23"},
+  {cat:"Sayılar", it:"ventiquattro", tr:"24"},
+  {cat:"Sayılar", it:"venticinque", tr:"25"},
+  {cat:"Sayılar", it:"ventisei", tr:"26"},
+  {cat:"Sayılar", it:"ventisette", tr:"27"},
+  {cat:"Sayılar", it:"ventotto", tr:"28"},
+  {cat:"Sayılar", it:"ventinove", tr:"29"},
+  {cat:"Sayılar", it:"trenta", tr:"30"},
+  {cat:"Sayılar", it:"quaranta", tr:"40"},
+  {cat:"Sayılar", it:"cinquanta", tr:"50"},
+  {cat:"Sayılar", it:"sessanta", tr:"60"},
+  {cat:"Sayılar", it:"settanta", tr:"70"},
+  {cat:"Sayılar", it:"ottanta", tr:"80"},
+  {cat:"Sayılar", it:"novanta", tr:"90"},
+  {cat:"Sayılar", it:"cento", tr:"100"},
+  {cat:"Sayılar", it:"mille", tr:"1.000"},
+  {cat:"Sayılar", it:"un milione", tr:"1.000.000"},
+  {cat:"Giysi", it:"La maglietta", tr:"Tişört"},
+  {cat:"Giysi", it:"I pantaloni", tr:"Pantolon"},
+  {cat:"Giysi", it:"La camicia", tr:"Gömlek"},
+  {cat:"Giysi", it:"La gonna", tr:"Etek"},
+  {cat:"Giysi", it:"Le scarpe", tr:"Ayakkabılar"},
+  {cat:"Giysi", it:"Il cappello", tr:"Şapka"},
+  {cat:"Giysi", it:"La sciarpa", tr:"Atkı"},
+  {cat:"Giysi", it:"La cravatta", tr:"Kravat"},
+  {cat:"Giysi", it:"Il completo", tr:"Takım elbise"},
+  {cat:"Giysi", it:"La giacca", tr:"Ceket"},
+  {cat:"Giysi", it:"Il vestito", tr:"Elbise"},
+  {cat:"Giysi", it:"Le mutande", tr:"İç çamaşırı"},
+  {cat:"Giysi", it:"Il cappotto", tr:"Palto"},
+  {cat:"Günler & Aylar", it:"Lunedì", tr:"Pazartesi"},
+  {cat:"Günler & Aylar", it:"Martedì", tr:"Salı"},
+  {cat:"Günler & Aylar", it:"Mercoledì", tr:"Çarşamba"},
+  {cat:"Günler & Aylar", it:"Giovedì", tr:"Perşembe"},
+  {cat:"Günler & Aylar", it:"Venerdì", tr:"Cuma"},
+  {cat:"Günler & Aylar", it:"Sabato", tr:"Cumartesi"},
+  {cat:"Günler & Aylar", it:"Domenica", tr:"Pazar"},
+  {cat:"Günler & Aylar", it:"Gennaio", tr:"Ocak"},
+  {cat:"Günler & Aylar", it:"Febbraio", tr:"Şubat"},
+  {cat:"Günler & Aylar", it:"Marzo", tr:"Mart"},
+  {cat:"Günler & Aylar", it:"Aprile", tr:"Nisan"},
+  {cat:"Günler & Aylar", it:"Maggio", tr:"Mayıs"},
+  {cat:"Günler & Aylar", it:"Giugno", tr:"Haziran"},
+  {cat:"Günler & Aylar", it:"Luglio", tr:"Temmuz"},
+  {cat:"Günler & Aylar", it:"Agosto", tr:"Ağustos"},
+  {cat:"Günler & Aylar", it:"Settembre", tr:"Eylül"},
+  {cat:"Günler & Aylar", it:"Ottobre", tr:"Ekim"},
+  {cat:"Günler & Aylar", it:"Novembre", tr:"Kasım"},
+  {cat:"Günler & Aylar", it:"Dicembre", tr:"Aralık"},
+  {cat:"Zarflar", it:"Subito", tr:"Hemen"},
+  {cat:"Zarflar", it:"Oggi", tr:"Bugün"},
+  {cat:"Zarflar", it:"Domani", tr:"Yarın"},
+  {cat:"Zarflar", it:"Ieri", tr:"Dün"},
+  {cat:"Zarflar", it:"Presto", tr:"Erken / Yakında"},
+  {cat:"Zarflar", it:"Tardi", tr:"Geç"},
+  {cat:"Zarflar", it:"Molto", tr:"Çok"},
+  {cat:"Zarflar", it:"Poco", tr:"Az"},
+  {cat:"Zarflar", it:"Troppo", tr:"Çok fazla"},
+  {cat:"Zarflar", it:"Abbastanza", tr:"Yeterince"},
+  {cat:"Zarflar", it:"Bene", tr:"İyi (şekilde)"},
+  {cat:"Zarflar", it:"Male", tr:"Kötü (şekilde)"},
+  {cat:"Zarflar", it:"Forte", tr:"Güçlü / Yüksek sesle"},
+  {cat:"Zarflar", it:"Piano", tr:"Yavaş / Alçak sesle"},
+  {cat:"Zarflar", it:"Felicemente", tr:"Mutlu bir şekilde"},
+  {cat:"Zarflar", it:"Tristemente", tr:"Üzgün bir şekilde"},
+  {cat:"Zarflar", it:"Qua", tr:"Burada"},
+  {cat:"Zarflar", it:"Là", tr:"Orada"},
+  {cat:"Zarflar", it:"Sopra", tr:"Üzerinde / Yukarıda"},
+  {cat:"Zarflar", it:"Sotto", tr:"Altında"},
+  {cat:"Zarflar", it:"A destra", tr:"Sağda"},
+  {cat:"Zarflar", it:"A sinistra", tr:"Solda"},
+  {cat:"Zarflar", it:"Forse", tr:"Belki"},
+  {cat:"Zarflar", it:"Probabilmente", tr:"Muhtemelen"},
+  {cat:"Soru Kelimeleri", it:"Perché", tr:"Neden / Çünkü"},
+  {cat:"Soru Kelimeleri", it:"Come", tr:"Nasıl"},
+  {cat:"Soru Kelimeleri", it:"Chi", tr:"Kim"},
+  {cat:"Soru Kelimeleri", it:"Quando", tr:"Ne zaman"},
+  {cat:"Soru Kelimeleri", it:"Dove", tr:"Nerede"},
+  {cat:"Ev & Odalar", it:"La cucina", tr:"Mutfak"},
+  {cat:"Ev & Odalar", it:"La camera da letto", tr:"Yatak odası"},
+  {cat:"Ev & Odalar", it:"La sala / Il salotto", tr:"Oturma odası"},
+  {cat:"Ev & Odalar", it:"Il bagno", tr:"Banyo"},
+  {cat:"Ev & Odalar", it:"Il tetto", tr:"Çatı"},
+  {cat:"Ev & Odalar", it:"Il giardino", tr:"Bahçe"},
+  {cat:"Ev & Odalar", it:"La porta", tr:"Kapı"},
+  {cat:"Ev & Odalar", it:"La finestra", tr:"Pencere"},
+  {cat:"Ev & Odalar", it:"Il pavimento", tr:"Zemin / Yer"},
+  {cat:"Mobilya & Eşyalar", it:"Il divano", tr:"Kanepe"},
+  {cat:"Mobilya & Eşyalar", it:"La poltrona", tr:"Koltuk"},
+  {cat:"Mobilya & Eşyalar", it:"Lo specchio", tr:"Ayna"},
+  {cat:"Mobilya & Eşyalar", it:"La lampada", tr:"Lamba"},
+  {cat:"Mobilya & Eşyalar", it:"Il quadro", tr:"Tablo / Resim"},
+  {cat:"Mobilya & Eşyalar", it:"L'armadio", tr:"Gardırop"},
+  {cat:"Mobilya & Eşyalar", it:"Lo scaffale", tr:"Raf"},
+  {cat:"Mobilya & Eşyalar", it:"L'albero", tr:"Ağaç"},
+  {cat:"Mobilya & Eşyalar", it:"Il tavolo", tr:"Masa"},
+  {cat:"Mobilya & Eşyalar", it:"La sedia", tr:"Sandalye"},
+  {cat:"Mobilya & Eşyalar", it:"Il letto", tr:"Yatak"},
+  {cat:"Mobilya & Eşyalar", it:"Il computer", tr:"Bilgisayar"},
+  {cat:"Mobilya & Eşyalar", it:"La scrivania", tr:"Çalışma masası"},
+  {cat:"Mobilya & Eşyalar", it:"La casa", tr:"Ev"},
+  {cat:"Mobilya & Eşyalar", it:"Il cane", tr:"Köpek"},
+  {cat:"Mobilya & Eşyalar", it:"Il gatto", tr:"Kedi"},
+  {cat:"Mobilya & Eşyalar", it:"L'arte", tr:"Sanat"},
+  {cat:"Ulaşım", it:"L'aereo", tr:"Uçak"},
+  {cat:"Ulaşım", it:"Il treno", tr:"Tren"},
+  {cat:"Ulaşım", it:"L'autobus", tr:"Otobüs"},
+  {cat:"Ulaşım", it:"L'auto / La macchina", tr:"Araba"},
+  {cat:"Ulaşım", it:"La bicicletta", tr:"Bisiklet"},
+  {cat:"Ulaşım", it:"La nave", tr:"Gemi"},
+  {cat:"Edatlar", it:"DI", tr:"ın / ın (ait olma)", sub:"es: il libro di Marco"},
+  {cat:"Edatlar", it:"A", tr:"e / a (yönelme)", sub:"es: vado a Roma"},
+  {cat:"Edatlar", it:"DA", tr:"dan / den / tarafından", sub:"es: vengo da Milano"},
+  {cat:"Edatlar", it:"IN", tr:"de / da (içinde)", sub:"es: sono in Italia"},
+  {cat:"Edatlar", it:"CON", tr:"ile (birliktelik)", sub:"es: parlo con te"},
+  {cat:"Edatlar", it:"SU", tr:"hakkında / üzerinde", sub:"es: il libro è sul tavolo"},
+  {cat:"Edatlar", it:"PER", tr:"için / nedeniyle", sub:"es: questo è per te"},
+  {cat:"Edatlar", it:"TRA / FRA", tr:"arasında", sub:"es: tra di noi"},
+];
+
+const CATEGORIES = ["Tümü", ...new Set(ALL_CARDS.map(c => c.cat))];
+
+let activeCat = "Tümü";
+let deck = [...ALL_CARDS];
+let currentIndex = 0;
+let isFlipped = false;
+let rightScore = 0, wrongScore = 0;
+let wrongIndices = [];
+
+const catRow = document.getElementById('catRow');
+CATEGORIES.forEach(cat => {
+  const btn = document.createElement('button');
+  btn.className = 'cat-btn' + (cat === 'Tümü' ? ' active' : '');
+  btn.textContent = cat;
+  btn.onclick = () => setCategory(cat, btn);
+  catRow.appendChild(btn);
+});
+
+function getBase() {
+  return activeCat === 'Tümü' ? [...ALL_CARDS] : ALL_CARDS.filter(c => c.cat === activeCat);
+}
+
+function setCategory(cat, btn) {
+  activeCat = cat;
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  deck = getBase();
+  currentIndex = 0; rightScore = 0; wrongScore = 0; wrongIndices = [];
+  updateScores(); showCard();
+}
+
+function showCard() {
+  const done = document.getElementById('doneScreen');
+  const scene = document.getElementById('scene');
+  const btnRow = document.getElementById('btnRow');
+  if (currentIndex >= deck.length) {
+    done.classList.add('visible'); scene.style.display = 'none'; btnRow.style.display = 'none';
+    document.getElementById('finalRight').textContent = rightScore;
+    document.getElementById('finalWrong').textContent = wrongScore;
+    return;
+  }
+  done.classList.remove('visible'); scene.style.display = ''; btnRow.style.display = '';
+  const v = deck[currentIndex];
+  const num = (currentIndex + 1) + ' / ' + deck.length;
+  document.getElementById('frontCat').textContent = v.cat;
+  document.getElementById('backCat').textContent = v.cat;
+  document.getElementById('frontWord').textContent = v.it;
+  document.getElementById('frontSub').textContent = '';
+  document.getElementById('backMain').textContent = v.tr;
+  document.getElementById('backSub').textContent = v.sub || '';
+  document.getElementById('cardNum').textContent = num;
+  document.getElementById('cardNumBack').textContent = num;
+  isFlipped = false;
+  document.getElementById('card').classList.remove('flipped');
+  const pct = (currentIndex / deck.length) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = num;
+}
+
+function flipCard() {
+  isFlipped = !isFlipped;
+  document.getElementById('card').classList.toggle('flipped', isFlipped);
+}
+function markRight() { rightScore++; updateScores(); nextCard(); }
+function markWrong() { wrongIndices.push(currentIndex); wrongScore++; updateScores(); nextCard(); }
+function nextCard() { currentIndex++; showCard(); }
+function updateScores() {
+  document.getElementById('rightCount').textContent = rightScore + ' doğru';
+  document.getElementById('wrongCount').textContent = wrongScore + ' yanlış';
+}
+function shuffleDeck() {
+  deck = getBase();
+  for (let i = deck.length - 1; i > 0; i--) { const j = Math.floor(Math.random()*(i+1)); [deck[i],deck[j]]=[deck[j],deck[i]]; }
+  currentIndex = 0; rightScore = 0; wrongScore = 0; wrongIndices = [];
+  updateScores(); showCard();
+}
+function restartDeck() {
+  deck = getBase(); currentIndex = 0; rightScore = 0; wrongScore = 0; wrongIndices = [];
+  updateScores(); showCard();
+}
+function reviewWrong() {
+  if (wrongIndices.length === 0) { restartDeck(); return; }
+  const wrongDeck = wrongIndices.map(i => deck[i]).filter(Boolean);
+  if (wrongDeck.length === 0) { restartDeck(); return; }
+  deck = wrongDeck; currentIndex = 0; rightScore = 0; wrongScore = 0; wrongIndices = [];
+  updateScores(); showCard();
+}
+
+showCard();
+</script>
+</body>
+</html>
